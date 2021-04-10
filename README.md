@@ -4,7 +4,7 @@ JPEG Decoder is a program that parses jpeg file data and stores it in a text fil
 
 ## Status
 
-Work In Progress 
+Work in progress 
 
 ## License
 GNU GPL v3.0
