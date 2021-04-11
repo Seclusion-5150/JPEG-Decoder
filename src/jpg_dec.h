@@ -80,9 +80,21 @@ struct tiff_header
 	byte ifd0_ptr;
 	bool isFilled;
 };
+struct xmp_header
+{
+	byte begin[40];
+	byte id[40];
+};
+struct xmp_segment
+{
+	byte identifier[29];
+	//add variable(s) for xmp packet here
+	struct xmp_header header;
+};
 struct exif_data
 {
 	struct tiff_header header;
+	struct xmp_segment xmp;
 };
 
 struct exif_data exif;

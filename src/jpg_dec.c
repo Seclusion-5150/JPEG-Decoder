@@ -44,7 +44,7 @@ void parse_tiff_header(struct file_data *data)
 {
 	if(exif.header.ifd0_ptr == 8)// if the header has already been filled set isFilled to true and return to the main function
 	{
-		exif.header.ifd0_ptr = TRUE;
+		exif.header.isFilled = TRUE;
 		return;
 	}
 	byte c = 1;
@@ -100,16 +100,42 @@ void parse_tiff_header(struct file_data *data)
 	fseek(data->image, -1L, SEEK_CUR);// Goes back one so that when it returns to the main function it will be able to parse the next marker
 }
 
-void parse_app1_subifd(struct file_data * data)
+void parse_xmp_segment(struct file_data * data)
 {
+	byte c = 1;
+	int i = 0;
+	bool isData = FALSE;
+	//Store the XMP identifier which is null terminated and always 29 bytes then print
+	while(c != '\0')
+	{
+		fscanf(data->image, "%c", &c);
+		exif.xmp.identifier[i++] = c;
+	}
+	printf("XMP Identifier: ");
+	print_array(exif.xmp.identifier, 29, "Character");
+	//Store the XMP packet
+	while(c!=0xFF) //Temporarily going through the xmp packet and printing it to see what it looks like so I can figure out how to parse it
+	{
+		fscanf(data->image, "%c", &c);
+		if(c == '"')
+		{
+			isData = !isData;
+			printf("\n");
+		}
+		else if(isData)
+		{
+			printf("%c", c);
+		}
 
+	}
+	printf("\n");
+	fseek(data->image, -1L, SEEK_CUR);
 }
 int main(int argc, char *argv[])
 {
-	//system("cd ..");
 	exif.header.isFilled = FALSE;
 	struct file_data data;
-	data.image = fopen("./res/mouse.jpg", "rb"); // put the path to your image here. 
+	data.image = fopen("./res/mouse.jpg", "rb"); // put the path to your image here.
 	data.isOver = FALSE;
 	fseek(data.image, 0, SEEK_END);
 	data.file_len = ftell(data.image);
@@ -117,6 +143,7 @@ int main(int argc, char *argv[])
 
 	byte c;
 	int i = 0;
+
 	while(!data.isOver)
 	{
 		fscanf(data.image,"%c", &c);
@@ -138,7 +165,7 @@ int main(int argc, char *argv[])
 					case APP1:
 						printf("\nThis is an EXIF metadata Structure: %#1x\n",(uint)c);
 						if(!exif.header.isFilled) parse_tiff_header(&data);
-						else parse_app1_subifd(&data);
+						if(exif.header.isFilled)  parse_xmp_segment(&data);
 						break;
 					case APP12:
 						printf("\nThis is the 0th IFD\n");
@@ -163,7 +190,6 @@ int main(int argc, char *argv[])
 						break;
 					case RST0:
 						break;
-
 					case RST1:
 						break;
 					case RST2:
@@ -187,6 +213,7 @@ int main(int argc, char *argv[])
 		}
 		i++;
 	}
+
 	data.file_len = i;
 
 
