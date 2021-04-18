@@ -71,13 +71,13 @@ void parse_tiff_header(struct file_data *data)
 			{
 				exif.header.identifier[i++] = c;
 			}
-			else if (( i >=5 ) && ( i < 7 ))
+			else if (( i > 4 ) && ( i < 7 ))
 			{
 
 				exif.header.endianness[j++] = c;
 				i++;
 			}
-			else if (( i >= 7 ) && ( i < 8))
+			else if (i == 7)
 			{
 				exif.header.signature = c;
 				i++;
@@ -104,7 +104,13 @@ void parse_xmp_segment(struct file_data * data)
 {
 	byte c = 1;
 	int i = 0;
-	bool isData = FALSE;
+	bool isData = FALSE, isFirst = TRUE;
+	char *string = NULL;
+	char *temp = NULL;
+	char **temp2 = NULL;
+	int string_length = 0;
+	exif.xmp.xpacket_length = 0;
+
 	//Store the XMP identifier which is null terminated and always 29 bytes then print
 	while(c != '\0')
 	{
@@ -113,22 +119,71 @@ void parse_xmp_segment(struct file_data * data)
 	}
 	printf("XMP Identifier: ");
 	print_array(exif.xmp.identifier, 29, "Character");
+
 	//Store the XMP packet
-	while(c!=0xFF) //Temporarily going through the xmp packet and printing it to see what it looks like so I can figure out how to parse it
+	while(c!=0xFF)
 	{
 		fscanf(data->image, "%c", &c);
-		if(c == '"')
+		if(c == '<')
 		{
-			isData = !isData;
-			printf("\n");
+			isData = TRUE;
+			temp = create_array_char(c);
+			if(temp == NULL)
+			{
+				printf("Error String is NULL\n");
+			}
+			else string = temp;
+			string_length++;
+		}
+		else if(c == '>')
+		{
+			isData = FALSE;
+			temp = add_item_char(string, c, string_length++);
+			if(temp == NULL)
+			{
+				printf("Error String is NULL\n");
+			}
+			else string = temp;
+
+			if(isFirst)
+			{
+				temp2 = create_array_string(string);
+				if(temp == NULL)
+				{
+					printf("Error pointer is NULL\n");
+				}
+				else exif.xmp.xpacket = temp2;
+				exif.xmp.xpacket_length++;
+				isFirst = FALSE;
+			}
+			else
+			{
+				temp2 = add_item_string(exif.xmp.xpacket, string, exif.xmp.xpacket_length);
+				if(temp2 == NULL)
+				{
+					printf("Error pointer is NULL\n");
+				}
+				else exif.xmp.xpacket = temp2;
+
+				exif.xmp.xpacket_length++;
+				print_list_char(string, string_length);
+
+			}
+			string_length = 0;
 		}
 		else if(isData)
 		{
-			printf("%c", c);
+			temp = add_item_char(string, c, string_length++);
+			if(temp == NULL)
+			{
+				printf("Error pointer is NULL\n");
+			}
+			else string = temp;
+
 		}
 
 	}
-	printf("\n");
+	//printf("\n");
 	fseek(data->image, -1L, SEEK_CUR);
 }
 int main(int argc, char *argv[])
@@ -165,7 +220,11 @@ int main(int argc, char *argv[])
 					case APP1:
 						printf("\nThis is an EXIF metadata Structure: %#1x\n",(uint)c);
 						if(!exif.header.isFilled) parse_tiff_header(&data);
-						if(exif.header.isFilled)  parse_xmp_segment(&data);
+						if(exif.header.isFilled)
+						{
+							parse_xmp_segment(&data);
+							printf("%s\n", exif.xmp.xpacket[2]);
+						}
 						break;
 					case APP12:
 						printf("\nThis is the 0th IFD\n");
@@ -216,7 +275,7 @@ int main(int argc, char *argv[])
 
 	data.file_len = i;
 
-
 	fclose(data.image);
+
 	return 0;
 }

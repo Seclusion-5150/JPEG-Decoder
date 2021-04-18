@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "arraylist.h"
 
 #define TRUE  1
 #define FALSE 0
@@ -47,9 +45,9 @@
 #define COM  	0xFE //contains a comment
 
 typedef int bool;
-typedef unsigned  char byte;
-typedef unsigned  int  uint;
-typedef unsigned  long ulong;
+typedef unsigned char byte;
+typedef unsigned int  uint;
+typedef unsigned long ulong;
 
 struct pixel_data
 {
@@ -62,7 +60,7 @@ struct image_data
 {
 	int width;
 	int height;
-	int isColor;
+	bool isColor;
 	struct pixel_Data** image;
 };
 
@@ -80,16 +78,24 @@ struct tiff_header
 	byte ifd0_ptr;
 	bool isFilled;
 };
-struct xmp_header
+
+struct rdf_header
 {
-	byte begin[40];
-	byte id[40];
+	char *about;
+	char **xlmns;
 };
+
+struct xmp_rdf
+{
+	struct rdf_header header;
+
+};
+
 struct xmp_segment
 {
 	byte identifier[29];
-	//add variable(s) for xmp packet here
-	struct xmp_header header;
+	char **xpacket;
+	int xpacket_length;
 };
 struct exif_data
 {
