@@ -1,13 +1,14 @@
 #include "jpg_dec.h"
 
-void print_matrix(byte  **matrix, ulong len)
+void print_matrix(byte matrix[8][8])
 {
 	int i = 0, j = 0;
-	for(i = 0; i < len; i++)
+	printf("Quantization Table: \n");
+	for(i = 0; i < 8; i++)
 	{
-		for(j = 0; j < 2; j++)
+		for(j = 0; j < 8; j++)
 		{
-			printf("[%d][%d]: %#1x\n",i, j, (unsigned int)matrix[i][j]);
+			printf("%#1x ", (byte)matrix[i][j]);
 		}
 		printf("\n");
 	}
@@ -166,8 +167,6 @@ void parse_xmp_segment(struct file_data * data)
 				else exif.xmp.xpacket = temp2;
 
 				exif.xmp.xpacket_length++;
-				print_list_char(string, string_length);
-
 			}
 			string_length = 0;
 		}
@@ -179,12 +178,60 @@ void parse_xmp_segment(struct file_data * data)
 				printf("Error pointer is NULL\n");
 			}
 			else string = temp;
-
 		}
-
 	}
 	//printf("\n");
 	fseek(data->image, -1L, SEEK_CUR);
+}
+void parse_qtables(struct file_data * data)
+{
+	byte c = 1;
+	int i = 0, j = 0;
+	int counter = 0, counter2 = 0;
+	int length = 0;
+	fscanf(data->image, "%c", &c);
+
+
+	bool isFirst = TRUE;
+	while(c != 0xFF)
+	{
+		fscanf(data->image, "%c", &c);
+
+			if(c != 0 && counter <= 1)
+			{
+				length+=c;
+				counter++;
+			}
+			else if(counter > 1 && counter <= 2)
+			{
+				printf("Precision = %d bits\n", c << 4);
+				counter++;
+			}
+			else
+			{
+				if(isFirst) pix_data.q_table1[i][j] = c;
+
+				else if(!isFirst) pix_data.q_table2[i][j] = c;
+
+				if(j > 7)
+				{
+					j = 0;
+					i++;
+				}
+				if(i > 7)
+				{
+					if(isFirst == TRUE )i = 0;
+					isFirst = FALSE;
+				}
+				j++;
+			}
+	}
+	printf("Quantization Table Length: %d\n", length);
+	fseek(data->image, -1L, SEEK_CUR);
+}
+void parse_dct(struct file_data *data)
+{
+
 }
 int main(int argc, char *argv[])
 {
@@ -223,7 +270,7 @@ int main(int argc, char *argv[])
 						if(exif.header.isFilled)
 						{
 							parse_xmp_segment(&data);
-							printf("%s\n", exif.xmp.xpacket[2]);
+							print_list_string(exif.xmp.xpacket, exif.xmp.xpacket_length);
 						}
 						break;
 					case APP12:
@@ -231,6 +278,7 @@ int main(int argc, char *argv[])
 						break;
 					case SOF0:
 						printf("\nStart of frame(baseline DCT): %#1x\n", (uint)c);
+						parse_dct(&data);
 						break;
 					case SOF2:
 						printf("\nStart of frame(progressive DCT): %#1x\n", (uint)c);
@@ -240,6 +288,9 @@ int main(int argc, char *argv[])
 						break;
 					case DQT:
 						printf("\nThis specifies one or more quantization tables: %#1x\n", (uint)c);
+						parse_qtables(&data);
+						print_matrix(pix_data.q_table1);
+						print_matrix(pix_data.q_table2);
 						break;
 					case DRI:
 						printf("\nThis specifies the interval between RSTn markers in MCUs: %#1x\n", (uint)c);

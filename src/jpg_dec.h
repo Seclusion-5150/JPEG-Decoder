@@ -55,13 +55,14 @@ struct pixel_data
 	int   y[8][8]; // luminance
 	int  cb[8][8]; // blue chrominance: How much blue is in the pixel
 	int  cr[8][8]; // red chrominance: How much red is in the pixel
+	byte q_table1[8][8];
+	byte q_table2[8][8];
 };
 struct image_data
 {
 	int width;
 	int height;
 	bool isColor;
-	struct pixel_Data** image;
 };
 
 struct file_data
@@ -79,17 +80,6 @@ struct tiff_header
 	bool isFilled;
 };
 
-struct rdf_header
-{
-	char *about;
-	char **xlmns;
-};
-
-struct xmp_rdf
-{
-	struct rdf_header header;
-
-};
 
 struct xmp_segment
 {
@@ -104,3 +94,4 @@ struct exif_data
 };
 
 struct exif_data exif;
+struct pixel_data pix_data;
