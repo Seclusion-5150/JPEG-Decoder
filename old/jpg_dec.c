@@ -1,6 +1,17 @@
-#include "arraylist.h"
+#include "jpg_dec.h"
 
-
+void print_matrix(byte matrix[8][8])
+{
+	int i = 0, j = 0;
+	for(i = 0; i < 8; i++)
+	{
+		for(j = 0; j < 8; j++)
+		{
+			printf("%#1x ", (byte)matrix[i][j]);
+		}
+		printf("\n");
+	}
+}
 void print_array(byte *array, int len, char *type)
 {
 	int i;
@@ -31,9 +42,9 @@ void print_array(byte *array, int len, char *type)
 }
 void parse_tiff_header(struct file_data *data)
 {
-	if(data->image_data.exif.header.ifd0_ptr == 8)// if the header has already been filled set isFilled to true and return to the main function
+	if(exif.header.ifd0_ptr == 8)// if the header has already been filled set isFilled to true and return to the main function
 	{
-		data->image_data.exif.header.isFilled = TRUE;
+		exif.header.isFilled = TRUE;
 		return;
 	}
 	byte c = 1;
@@ -58,33 +69,33 @@ void parse_tiff_header(struct file_data *data)
 		{
 			if ( i < 5)
 			{
-				data->image_data.exif.header.identifier[i++] = c;
+				exif.header.identifier[i++] = c;
 			}
 			else if (( i > 4 ) && ( i < 7 ))
 			{
 
-				data->image_data.exif.header.endianness[j++] = c;
+				exif.header.endianness[j++] = c;
 				i++;
 			}
 			else if (i == 7)
 			{
-				data->image_data.exif.header.signature = c;
+				exif.header.signature = c;
 				i++;
 			}
 			else if (i == 8)
 			{
-				data->image_data.exif.header.ifd0_ptr = c;
+				exif.header.ifd0_ptr = c;
 				i++;
 			}
 		}
 	}
 
 	printf("Identifier: ");
-	print_array(data->image_data.exif.header.identifier, 5, "Character");
+	print_array(exif.header.identifier, 5, "Character");
 	printf("Endianness: ");
-	print_array(data->image_data.exif.header.endianness, 2, "Character");
-	printf("Signature: %d\n", data->image_data.exif.header.signature);
-	printf("IFD0 Pointer: %d\n", data->image_data.exif.header.ifd0_ptr);
+	print_array(exif.header.endianness, 2, "Character");
+	printf("Signature: %d\n", exif.header.signature);
+	printf("IFD0 Pointer: %d\n", exif.header.ifd0_ptr);
 
 	fseek(data->image, -1L, SEEK_CUR);// Goes back one so that when it returns to the main function it will be able to parse the next marker
 }
@@ -98,16 +109,16 @@ void parse_xmp_segment(struct file_data * data)
 	char *temp = NULL;
 	char **temp2 = NULL;
 	int string_length = 0;
-	data->image_data.exif.xmp.xpacket_length = 0;
+	exif.xmp.xpacket_length = 0;
 
 	//Store the XMP identifier which is null terminated and always 29 bytes then print
 	while(c != '\0')
 	{
 		c = fgetc(data->image);
-		data->image_data.exif.xmp.identifier[i++] = c;
+		exif.xmp.identifier[i++] = c;
 	}
 	printf("XMP Identifier: ");
-	print_array(data->image_data.exif.xmp.identifier, 29, "Character");
+	print_array(exif.xmp.identifier, 29, "Character");
 
 	//Store the XMP packet
 	while(c!=0xff)
@@ -141,20 +152,20 @@ void parse_xmp_segment(struct file_data * data)
 				{
 					printf("Error pointer is NULL\n");
 				}
-				else data->image_data.exif.xmp.xpacket = temp2;
-				data->image_data.exif.xmp.xpacket_length++;
+				else exif.xmp.xpacket = temp2;
+				exif.xmp.xpacket_length++;
 				isFirst = FALSE;
 			}
 			else
 			{
-				temp2 = add_item_string(data->image_data.exif.xmp.xpacket, string, data->image_data.exif.xmp.xpacket_length);
+				temp2 = add_item_string(exif.xmp.xpacket, string, exif.xmp.xpacket_length);
 				if(temp2 == NULL)
 				{
 					printf("Error pointer is NULL\n");
 				}
-				else data->image_data.exif.xmp.xpacket = temp2;
+				else exif.xmp.xpacket = temp2;
 
-				data->image_data.exif.xmp.xpacket_length++;
+				exif.xmp.xpacket_length++;
 			}
 			string_length = 0;
 		}
@@ -168,103 +179,128 @@ void parse_xmp_segment(struct file_data * data)
 			else string = temp;
 		}
 	}
+	//printf("\n");
 	fseek(data->image, -1L, SEEK_CUR);
 }
 void parse_qtables(struct file_data * data)
 {
-	byte table_info = 0;
+	byte c = 1;
 	int i = 0, j = 0;
+	int counter = 0, counter2 = 0;
 	byte length = 0;
-	byte data2[8][8];
-	byte array_length = 0;
-	length  = fgetc(data->image) << 8;
-	length += fgetc(data->image);
-	length-=2;
-	printf("Quantization Table Length: %d\n", length);
-	while(length > 0)
+	printf("T: %d\n", c );
+
+	bool isFirst = TRUE;
+
+	while(c != 0xff)
 	{
-		table_info = fgetc(data->image);
-		byte table_id = table_info & 0x0f;
-		if(table_id > 3)
-		{
-			printf("Error: %#1x\n", table_id);
-			return;
-		}
-		if(table_info >> 4 !=0)
-		{
-			for(i = 0; i < 64;i++)
+			c = fgetc(data->image);
+			if(c == 0xdb) printf("SUCCCESSSSSS\n");
+
+			if(counter <= 1)
 			{
-					data->image_data.q_tables[array_length].q_table[zz_map[i]] = (fgetc(data->image) << 8) + fgetc(data->image);
+				//Unable to get the length for whatever reason. Need to figure out why ...
+				length+=c;
+				length = length << 8; // Every example I can find shifts the bits left by 8 and then adds the result to the next byte
+															// This does not work at all at least with this image
+				counter++;
 			}
-			data->image_data.q_tables[array_length].isFilled = TRUE;
-
-			array_length++;
-
-			length-=128;
-		}
-		else
-		{
-			for(i = 0; i < 64;i++)
+			else if(counter == 2)
 			{
-					data->image_data.q_tables[array_length].q_table[zz_map[i]] = fgetc(data->image);
+				//this is where I'm supposed to find the data for the "Precision bits"
+				//As I commented earlier shifting the bits in the way every other example has shown me how to
+				//has been useless
+				printf("T2: %#1x\n", c & 0x0F);
+				counter++;
 			}
-			data->image_data.q_tables[array_length].isFilled = TRUE;
+			else
+			{
+				if(isFirst)
+				{
 
-			array_length++;
-			length -=64;
-		}
+					image_data.q_table1[i][j] = c; // It seems like I have everything stored but the data doesn't look right when displayed
+			 	}
+				else if(!isFirst) image_data.q_table2[i][j] = c;
 
-		length--;
+				if(j > 7)
+				{
+					j = 0;
+					i++;
+				}
+				if(i > 7)
+				{
+					if(isFirst == TRUE )i = 0;
+					isFirst = FALSE;
+				}
+				j++;
+			}
 	}
+
+	printf("Quantization Table Length: %d\n", length);
+	fseek(data->image, -1L, SEEK_CUR);
 }
 void parse_dct(struct file_data *data)
 {
 
 	byte c = 1;
-	int i = 0, j = 0;
-	byte component_id;
+	int i = 0;
+	byte length = 0;
+	image_data.width = 0;
+	image_data.height = 0;
+	image_data.color_type = 0;
 
-	//get length
-	uint length = fgetc(data->image) << 8;
-	length+= fgetc(data->image);
+	while(c != 0xff)
+	{
+		c = fgetc(data->image);
+		//printf("%u\n", c);
+		if(c == SOF2) printf("SUCCCESSSSSS\n");
+		if(i > 0 && i <= 2)
+		{
+			//												 ( b1,8 +	(3 * b2) )
+			//This byte pair is always ( 0, 8 + (3 * the number of components)) still not sure why
+			if(i == 1)length += c;
+			else
+			{
+				int temp = c * 3;
+				length+=temp;
+			}
+		}
+		else if(i >= 3 && i <= 4) 					//In the next two if statements find the width and the height
+		{
+			image_data.width += c;							//(Width or Height) = (b1 * 256(2^8)) + b2
+			if(i == 3) image_data.width = image_data.width << 8; // b1 being the first byte
+		}																		//and b2 being the second byte
+		else if(i >= 5 && i <= 6)
+		{
+			image_data.height += c;
+			if(i == 5) image_data.height = image_data.height << 8;
+		}
+		else if(i == 7)//check for the number of color components
+		{
+			//if c is 3 then it is Y-Cb-Cr since it has 3 components
+			//if c is 4 then it is C-M-Y-K since it has 4 components
+			//if c is 1 then it is Y       since it has 1 component
 
-	//get precision
-	byte precision = fgetc(data->image); // must be 8 jpeg doesn't support anything other than 8 bit precision
+			image_data.color_type = c;
+		}
+		else if (i > 7)
+		{
+			switch(c)
+			{
+				case 1:
+					break;
+				case 2:
+					break;
+				case 3:
+					break;
+			}
+		}
+		i++;
+	}
 
-
-	data->image_data.width = 0;
-	data->image_data.height = 0;
-	data->image_data.color_type = 0;
-	//get length
 	printf("Length: %u\n", length);
-
-	//get width
-	data->image_data.width += fgetc(data->image) << 8;							//(Width or Height) = (b1 * 256(2^8)) + b2
-	data->image_data.width += fgetc(data->image); // b1 being the first byte																	//and b2 being the second byte
-
-	//get height
-	data->image_data.height += fgetc(data->image) << 8;
-	data->image_data.height += fgetc(data->image);
-
-	//get color type CMYK, YCbCr, or Y
-	data->image_data.color_type = fgetc(data->image);
-
-	for(j = 0; j < data->image_data.color_type;j++)
-	{
-			component_id = fgetc(data->image);
-			c = fgetc(data->image);
-			data->image_data.ccmp[component_id - 1].horizontal_sampling_factor = c >> 4; //Get the upper bits by shifting to the right
-			data->image_data.ccmp[component_id - 1].vertical_sampling_factor = c & 0x0F;// Get the lower bits by &ing with 0x0F
-			data->image_data.ccmp[component_id - 1].quantization_table_id = fgetc(data->image);
-	}
-	length = length - 8 - (3*data->image_data.color_type);
-	if(length != 0)
-	{
-		printf("Error\n");
-		return;
-	}
-	printf("Width: %u\n", data->image_data.width);
-	printf("Height: %u\n", data->image_data.height);
+	printf("Width: %u\n", image_data.width);
+	printf("Height: %u\n", image_data.height);
 	fseek(data->image, -1L, SEEK_CUR);
 }
 
@@ -272,41 +308,44 @@ void parse_htables(struct file_data *data)
 {
 	byte c = 1;
 	int counter = 0;
-	int length = fgetc(data->image) << 8;
-	length+= fgetc(data->image);
-
-	printf("length: %d\n", length);
-	length-=2;
-	while(length > 0)
+	int length = 0;
+	int temp, temp2, temp3, temp4, temp5;
+	while(c != 0xff)
 	{
-		c = fgetc(data->image);
+		fscanf(data->image, "%c", &c);
+		//printf("%u\n", c);
+		if(counter == 0 || counter == 1)
+		{
+			if(counter == 1) length = length << 8;
+			length += c;
+		}
+		else if(counter >= 3) //number of symbols with codes of length
+		{
+			//printf("%u\n", c );
+		}
+		else //Table containing the symbols in increasing total of length
+		{
 
-
-
-		length--;
+		}
+		counter++;
 	}
+	fseek(data->image, -1L, SEEK_CUR);
+	printf("length: %d\n", length);
+
 }
 
 int main(int argc, char *argv[])
 {
-	//get the file to read from the commandline
-	char *args = malloc(sizeof(char)*(strlen("./res/") + strlen(argv[1])));
-	strcat(args, "./res/");
-	strcat(args, argv[1]);
-
+	exif.header.isFilled = FALSE;
 	struct file_data data;
-	int i = 0, j = 0;
-	for(i = 0; i < 4;i++) data.image_data.q_tables[i].isFilled = FALSE;
-
-	data.image_data.exif.header.isFilled = FALSE;
-
-	data.image = fopen(args, "rb"); // put the path to your image here.
+	data.image = fopen("./res/mouse.jpg", "rb"); // put the path to your image here.
 	data.isOver = FALSE;
 	fseek(data.image, 0, SEEK_END);
 	data.file_len = ftell(data.image);
 	rewind(data.image);
 
 	byte c;
+	int i = 0;
 	int counter = 0;
 	while(!data.isOver)
 	{
@@ -329,11 +368,11 @@ int main(int argc, char *argv[])
 						break;
 					case APP1:
 						printf("\nThis is an EXIF metadata Structure: %#1x\n",(uint)c);
-						if(!data.image_data.exif.header.isFilled) parse_tiff_header(&data);
-						if(data.image_data.exif.header.isFilled)
+						if(!exif.header.isFilled) parse_tiff_header(&data);
+						if(exif.header.isFilled)
 						{
 							parse_xmp_segment(&data);
-							print_list_string(data.image_data.exif.xmp.xpacket, data.image_data.exif.xmp.xpacket_length);
+							print_list_string(exif.xmp.xpacket, exif.xmp.xpacket_length);
 						}
 						break;
 					case APP12:
@@ -342,16 +381,7 @@ int main(int argc, char *argv[])
 					case SOF0:
 						printf("\nStart of frame(baseline DCT): %#1x\n", (uint)c);
 						parse_dct(&data);
-						i = 0, j = 0;
-						for(i = 0; i < 3;i++)
-						{
-							printf("Component ID: %d\n", i + 1);
-							printf("Horizontal Sampling Factor: %d\n", data.image_data.ccmp[i].horizontal_sampling_factor);
-							printf("Vertical Sampling Factor: %d\n", data.image_data.ccmp[i].vertical_sampling_factor);
-							printf("Quantization Table ID: %d\n", data.image_data.ccmp[i].quantization_table_id);
-							printf("\n");
-						}
-						switch(data.image_data.color_type)
+						switch(image_data.color_type)
 						{
 							case 4:
 								printf("Color Type: CMYK\n");
@@ -374,26 +404,10 @@ int main(int argc, char *argv[])
 					case DQT:
 						printf("\nThis specifies one or more quantization tables: %#1x\n", (uint)c);
 						parse_qtables(&data);
-						j = 0;
-						i = 0;
-						int counter = 0;
-						while(data.image_data.q_tables[i].isFilled)
-						{
-								printf("Quantization Table: \n");
-								for(j = 0; j < 64;j++)
-								{
-									printf("%#1x ", data.image_data.q_tables[i].q_table[j]);
-									counter++;
-
-									if(counter == 8)
-									{
-										counter = 0;
-										printf("\n");
-									}
-								}
-								printf("\n");
-								i++;
-						}
+						printf("Quantization Table: \n");
+						print_matrix(image_data.q_table1);
+						printf("Quantization Table: \n");
+						print_matrix(image_data.q_table2);
 						break;
 					case DRI:
 						printf("\nThis specifies the interval between RSTn markers in MCUs: %#1x\n", (uint)c);

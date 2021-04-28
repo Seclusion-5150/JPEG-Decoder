@@ -1,4 +1,6 @@
-#include "arraylist.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #define TRUE  1
 #define FALSE 0
@@ -48,28 +50,12 @@ typedef int bool;
 typedef unsigned char byte;
 typedef unsigned int  uint;
 typedef unsigned long ulong;
-
-struct pixel_data
+struct pixel
 {
 	/*RGB can be computed directly from these values the problem is knowing how ...*/
-	int   y[8][8]; // luminance
-	int  cb[8][8]; // blue chrominance: How much blue is in the pixel
-	int  cr[8][8]; // red chrominance: How much red is in the pixel
-	byte q_table1[8][8];
-	byte q_table2[8][8];
-};
-struct image_data
-{
-	int width;
-	int height;
-	bool isColor;
-};
-
-struct file_data
-{
-	FILE *image;
-	unsigned long file_len;
-	bool isOver;
+	byte   y; // luminance
+	byte  cb; // blue chrominance: How much blue is in the pixel
+	byte  cr; // red chrominance: How much red is in the pixel
 };
 struct tiff_header
 {
@@ -79,7 +65,6 @@ struct tiff_header
 	byte ifd0_ptr;
 	bool isFilled;
 };
-
 
 struct xmp_segment
 {
@@ -92,6 +77,46 @@ struct exif_data
 	struct tiff_header header;
 	struct xmp_segment xmp;
 };
+struct MCUs
+{
+	struct pixel mcu[8][8];
+};
+struct quantization_table
+{
+	byte q_table[64];
+	bool isFilled;
+};
+const byte zz_map[] =
+{
+	0, 1, 8, 16, 9, 2, 3, 10, 17, 24, 32, 25, 18, 11, 4, 5, 12,
+	19, 26, 33, 40,48, 41, 34, 27, 20, 13,6, 7, 14, 21, 28, 35,
+	42, 49,56, 57, 50, 43, 36,29, 22, 15, 23, 30, 37, 44, 51, 58,
+	59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63
+};
+struct color_component
+{
+	byte horizontal_sampling_factor;
+	byte vertical_sampling_factor;
+	byte quantization_table_id;
+};
+struct huffman_table
+{
+	byte **symbols;
+};
+struct image_data
+{
+	int width;
+	int height;
+	byte color_type;
+	struct color_component ccmp[4];
+	struct quantization_table q_tables[4];
+	struct exif_data exif;
+};
 
-struct exif_data exif;
-struct pixel_data pix_data;
+struct file_data
+{
+	FILE *image;
+	unsigned long file_len;
+	bool isOver;
+	struct image_data image_data;
+};

@@ -1,0 +1,468 @@
+In file included from ./src/jpg_dec.c:1:
+./src/jpg_dec.h:100:1: warning: declaration does not declare anything
+ };
+ ^
+./src/jpg_dec.h:100:1: warning: no semicolon at end of struct or union
+In file included from ./src/jpg_dec.c:2:
+./src/linkedlist.h:46:2: error: conflicting types for ‘linked_list_double’
+ }linked_list_double;
+  ^~~~~~~~~~~~~~~~~~
+./src/linkedlist.h:39:2: note: previous declaration of ‘linked_list_double’ was here
+ }linked_list_double;
+  ^~~~~~~~~~~~~~~~~~
+./src/linkedlist.h: In function ‘create_list_int’:
+./src/linkedlist.h:55:6: error: ‘linked_list_int’ {aka ‘struct <anonymous>’} has no member named ‘T’
+  node->T = T;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:58:1: error: unknown type name ‘linked_list’; use ‘struct’ keyword to refer to the type
+ linked_list *create_list_double(double data, TYPES T)
+ ^~~~~~~~~~~
+ struct 
+./src/linkedlist.h: In function ‘create_list_double’:
+./src/linkedlist.h:64:6: error: ‘linked_list_double’ {aka ‘struct <anonymous>’} has no member named ‘T’
+  node->T = T;
+      ^~
+./src/linkedlist.h:66:9: warning: returning ‘linked_list_double *’ {aka ‘struct <anonymous> *’} from a function with incompatible return type ‘int *’ [-Wincompatible-pointer-types]
+  return node;
+         ^~~~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:68:1: error: unknown type name ‘linked_list’; use ‘struct’ keyword to refer to the type
+ linked_list *create_list_long(long data, TYPES T)
+ ^~~~~~~~~~~
+ struct 
+./src/linkedlist.h: In function ‘create_list_long’:
+./src/linkedlist.h:70:2: error: unknown type name ‘linked_list_long’; did you mean ‘linked_list_int’?
+  linked_list_long * node;
+  ^~~~~~~~~~~~~~~~
+  linked_list_int
+./src/linkedlist.h:71:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:72:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (long)data;
+      ^~
+./src/linkedlist.h:73:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:74:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:75:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: In function ‘create_list_char’:
+./src/linkedlist.h:84:6: error: ‘linked_list_char’ {aka ‘struct <anonymous>’} has no member named ‘T’
+  node->T = T;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:89:1: error: unknown type name ‘linked_list_float’; did you mean ‘linked_list_char’?
+ linked_list_float *create_list_float(float data, TYPES T)
+ ^~~~~~~~~~~~~~~~~
+ linked_list_char
+./src/linkedlist.h: In function ‘create_list_float’:
+./src/linkedlist.h:91:2: error: unknown type name ‘linked_list_float’; did you mean ‘linked_list_char’?
+  linked_list_float * node;
+  ^~~~~~~~~~~~~~~~~
+  linked_list_char
+./src/linkedlist.h:92:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:93:6: error: request for member ‘data’ in something not a structure or union
+  node->data = data;
+      ^~
+./src/linkedlist.h:94:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:95:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:96:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:99:1: error: unknown type name ‘linked_list_uint’; did you mean ‘linked_list_int’?
+ linked_list_uint *create_list_uint(unsigned int data, TYPES T)
+ ^~~~~~~~~~~~~~~~
+ linked_list_int
+./src/linkedlist.h: In function ‘create_list_uint’:
+./src/linkedlist.h:101:3: error: unknown type name ‘linked_list_uint’; did you mean ‘linked_list_int’?
+   linked_list_uint * node;
+   ^~~~~~~~~~~~~~~~
+   linked_list_int
+./src/linkedlist.h:102:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:103:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (unsigned int)data;
+      ^~
+./src/linkedlist.h:104:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:105:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:106:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:109:1: error: unknown type name ‘linked_list_ulong’; did you mean ‘linked_list_int’?
+ linked_list_ulong *create_list_ulong(unsigned long data, TYPES T)
+ ^~~~~~~~~~~~~~~~~
+ linked_list_int
+./src/linkedlist.h: In function ‘create_list_ulong’:
+./src/linkedlist.h:111:2: error: unknown type name ‘linked_list_ulong’; did you mean ‘linked_list_int’?
+  linked_list_ulong * node;
+  ^~~~~~~~~~~~~~~~~
+  linked_list_int
+./src/linkedlist.h:112:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:113:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (unsigned long)data;
+      ^~
+./src/linkedlist.h:114:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:115:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:116:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:119:1: error: unknown type name ‘linked_list_uchar’; did you mean ‘linked_list_char’?
+ linked_list_uchar *create_list_uchar(unsigned char data, TYPES T)
+ ^~~~~~~~~~~~~~~~~
+ linked_list_char
+./src/linkedlist.h: In function ‘create_list_uchar’:
+./src/linkedlist.h:121:2: error: unknown type name ‘linked_list_uchar’; did you mean ‘linked_list_char’?
+  linked_list_uchar * node;
+  ^~~~~~~~~~~~~~~~~
+  linked_list_char
+./src/linkedlist.h:122:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:123:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (unsigned char)data;
+      ^~
+./src/linkedlist.h:124:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:125:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:126:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:129:19: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void display_list(linked_list* list)
+                   ^~~~~~~~~~~
+                   linked_list_int
+./src/linkedlist.h:162:14: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_int(linked_list *list, int data)
+              ^~~~~~~~~~~
+              linked_list_int
+./src/linkedlist.h:166:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_char(linked_list *list, char data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:170:17: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_double(linked_list *list, double data)
+                 ^~~~~~~~~~~
+                 linked_list_int
+./src/linkedlist.h:174:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_long(linked_list *list, long data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:178:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_float(linked_list *list, float data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:182:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_uint(linked_list *list, unsigned int data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:187:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_ulong(linked_list *list, unsigned long data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:191:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_uchar(linked_list *list, unsigned char data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:196:14: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_int(linked_list *list, int data)
+              ^~~~~~~~~~~
+              linked_list_int
+./src/linkedlist.h:200:17: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_double(linked_list *list, double data)
+                 ^~~~~~~~~~~
+                 linked_list_int
+./src/linkedlist.h:204:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_float(linked_list *list, float data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:208:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_long(linked_list *list, long data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:212:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_char(linked_list *list, char data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:216:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_uint(linked_list *list, unsigned int data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:220:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_ulong(linked_list *list, unsigned long data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:224:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_uchar(linked_list *list, unsigned char data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/jpg_dec.c: In function ‘main’:
+./src/jpg_dec.c:236:2: error: unknown type name ‘linked_list’; use ‘struct’ keyword to refer to the type
+  linked_list *list;
+  ^~~~~~~~~~~
+  struct 
+In file included from ./src/jpg_dec.c:2:
+./src/linkedlist.h:5:53: error: ‘add_int’ undeclared (first use in this function); did you mean ‘u_int’?
+ #define add(list, data) _Generic((list, data), int: add_int, char: add_char, double: add_double, long: add_long, float: add_float, unsigned int: add_uint, unsigned char: add_uchar, unsigned long: add_ulong)(list,data);
+                                                     ^~~~~~~
+./src/jpg_dec.c:238:2: note: in expansion of macro ‘add’
+  add(list, 1);
+  ^~~
+./src/linkedlist.h:5:53: note: each undeclared identifier is reported only once for each function it appears in
+ #define add(list, data) _Generic((list, data), int: add_int, char: add_char, double: add_double, long: add_long, float: add_float, unsigned int: add_uint, unsigned char: add_uchar, unsigned long: add_ulong)(list,data);
+                                                     ^~~~~~~
+./src/jpg_dec.c:238:2: note: in expansion of macro ‘add’
+  add(list, 1);
+  ^~~
+./src/jpg_dec.h:100:1: warning: declaration does not declare anything
+ };
+ ^
+./src/jpg_dec.h:100:1: warning: no semicolon at end of struct or union
+./src/linkedlist.h:46:2: error: conflicting types for ‘linked_list_double’
+ }linked_list_double;
+  ^~~~~~~~~~~~~~~~~~
+./src/linkedlist.h:39:2: note: previous declaration of ‘linked_list_double’ was here
+ }linked_list_double;
+  ^~~~~~~~~~~~~~~~~~
+./src/linkedlist.h: In function ‘create_list_int’:
+./src/linkedlist.h:55:6: error: ‘linked_list_int’ {aka ‘struct <anonymous>’} has no member named ‘T’
+  node->T = T;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:58:1: error: unknown type name ‘linked_list’; use ‘struct’ keyword to refer to the type
+ linked_list *create_list_double(double data, TYPES T)
+ ^~~~~~~~~~~
+ struct 
+./src/linkedlist.h: In function ‘create_list_double’:
+./src/linkedlist.h:64:6: error: ‘linked_list_double’ {aka ‘struct <anonymous>’} has no member named ‘T’
+  node->T = T;
+      ^~
+./src/linkedlist.h:66:9: warning: returning ‘linked_list_double *’ {aka ‘struct <anonymous> *’} from a function with incompatible return type ‘int *’ [-Wincompatible-pointer-types]
+  return node;
+         ^~~~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:68:1: error: unknown type name ‘linked_list’; use ‘struct’ keyword to refer to the type
+ linked_list *create_list_long(long data, TYPES T)
+ ^~~~~~~~~~~
+ struct 
+./src/linkedlist.h: In function ‘create_list_long’:
+./src/linkedlist.h:70:2: error: unknown type name ‘linked_list_long’; did you mean ‘linked_list_int’?
+  linked_list_long * node;
+  ^~~~~~~~~~~~~~~~
+  linked_list_int
+./src/linkedlist.h:71:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:72:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (long)data;
+      ^~
+./src/linkedlist.h:73:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:74:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:75:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: In function ‘create_list_char’:
+./src/linkedlist.h:84:6: error: ‘linked_list_char’ {aka ‘struct <anonymous>’} has no member named ‘T’
+  node->T = T;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:89:1: error: unknown type name ‘linked_list_float’; did you mean ‘linked_list_char’?
+ linked_list_float *create_list_float(float data, TYPES T)
+ ^~~~~~~~~~~~~~~~~
+ linked_list_char
+./src/linkedlist.h: In function ‘create_list_float’:
+./src/linkedlist.h:91:2: error: unknown type name ‘linked_list_float’; did you mean ‘linked_list_char’?
+  linked_list_float * node;
+  ^~~~~~~~~~~~~~~~~
+  linked_list_char
+./src/linkedlist.h:92:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:93:6: error: request for member ‘data’ in something not a structure or union
+  node->data = data;
+      ^~
+./src/linkedlist.h:94:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:95:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:96:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:99:1: error: unknown type name ‘linked_list_uint’; did you mean ‘linked_list_int’?
+ linked_list_uint *create_list_uint(unsigned int data, TYPES T)
+ ^~~~~~~~~~~~~~~~
+ linked_list_int
+./src/linkedlist.h: In function ‘create_list_uint’:
+./src/linkedlist.h:101:3: error: unknown type name ‘linked_list_uint’; did you mean ‘linked_list_int’?
+   linked_list_uint * node;
+   ^~~~~~~~~~~~~~~~
+   linked_list_int
+./src/linkedlist.h:102:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:103:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (unsigned int)data;
+      ^~
+./src/linkedlist.h:104:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:105:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:106:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:109:1: error: unknown type name ‘linked_list_ulong’; did you mean ‘linked_list_int’?
+ linked_list_ulong *create_list_ulong(unsigned long data, TYPES T)
+ ^~~~~~~~~~~~~~~~~
+ linked_list_int
+./src/linkedlist.h: In function ‘create_list_ulong’:
+./src/linkedlist.h:111:2: error: unknown type name ‘linked_list_ulong’; did you mean ‘linked_list_int’?
+  linked_list_ulong * node;
+  ^~~~~~~~~~~~~~~~~
+  linked_list_int
+./src/linkedlist.h:112:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:113:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (unsigned long)data;
+      ^~
+./src/linkedlist.h:114:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:115:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:116:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:119:1: error: unknown type name ‘linked_list_uchar’; did you mean ‘linked_list_char’?
+ linked_list_uchar *create_list_uchar(unsigned char data, TYPES T)
+ ^~~~~~~~~~~~~~~~~
+ linked_list_char
+./src/linkedlist.h: In function ‘create_list_uchar’:
+./src/linkedlist.h:121:2: error: unknown type name ‘linked_list_uchar’; did you mean ‘linked_list_char’?
+  linked_list_uchar * node;
+  ^~~~~~~~~~~~~~~~~
+  linked_list_char
+./src/linkedlist.h:122:6: error: request for member ‘length’ in something not a structure or union
+  node->length = 0;
+      ^~
+./src/linkedlist.h:123:6: error: request for member ‘data’ in something not a structure or union
+  node->data = (unsigned char)data;
+      ^~
+./src/linkedlist.h:124:6: error: request for member ‘length’ in something not a structure or union
+  node->length++;
+      ^~
+./src/linkedlist.h:125:6: error: request for member ‘T’ in something not a structure or union
+  node->T = T;
+      ^~
+./src/linkedlist.h:126:6: error: request for member ‘next’ in something not a structure or union
+  node->next = NULL;
+      ^~
+./src/linkedlist.h: At top level:
+./src/linkedlist.h:129:19: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void display_list(linked_list* list)
+                   ^~~~~~~~~~~
+                   linked_list_int
+./src/linkedlist.h:162:14: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_int(linked_list *list, int data)
+              ^~~~~~~~~~~
+              linked_list_int
+./src/linkedlist.h:166:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_char(linked_list *list, char data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:170:17: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_double(linked_list *list, double data)
+                 ^~~~~~~~~~~
+                 linked_list_int
+./src/linkedlist.h:174:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_long(linked_list *list, long data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:178:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_float(linked_list *list, float data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:182:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_uint(linked_list *list, unsigned int data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:187:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_ulong(linked_list *list, unsigned long data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:191:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void add_uchar(linked_list *list, unsigned char data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:196:14: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_int(linked_list *list, int data)
+              ^~~~~~~~~~~
+              linked_list_int
+./src/linkedlist.h:200:17: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_double(linked_list *list, double data)
+                 ^~~~~~~~~~~
+                 linked_list_int
+./src/linkedlist.h:204:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_float(linked_list *list, float data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:208:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_long(linked_list *list, long data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:212:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_char(linked_list *list, char data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:216:15: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_uint(linked_list *list, unsigned int data)
+               ^~~~~~~~~~~
+               linked_list_int
+./src/linkedlist.h:220:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_ulong(linked_list *list, unsigned long data)
+                ^~~~~~~~~~~
+                linked_list_int
+./src/linkedlist.h:224:16: error: unknown type name ‘linked_list’; did you mean ‘linked_list_int’?
+ void del_uchar(linked_list *list, unsigned char data)
+                ^~~~~~~~~~~
+                linked_list_int
