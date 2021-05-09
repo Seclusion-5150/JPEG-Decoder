@@ -16,7 +16,7 @@ char * create_array_char(char data)
 
   return array;
 }
-char * create_array_byte(byte data)
+byte * create_array_byte(byte data)
 {
   byte * array = (byte*)malloc(sizeof(byte));
   array[0] = data;
@@ -34,7 +34,7 @@ char * add_item_char(char *array, char data, int array_length)
   }
   return new_array;
 }
-char * add_item_byte(char *array, byte data, int array_length)
+byte * add_item_byte(char *array, byte data, int array_length)
 {
   byte *new_array = (byte*)realloc(array, sizeof(byte) * (++array_length));
   if(new_array != NULL) new_array[array_length - 1] = data;

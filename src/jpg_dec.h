@@ -102,6 +102,9 @@ struct color_component
 struct huffman_table
 {
 	byte **symbols;
+	int rows;
+	int symbol_sizes[16];
+	bool isFilled;
 };
 struct image_data
 {
@@ -111,6 +114,9 @@ struct image_data
 	struct color_component ccmp[4];
 	struct quantization_table q_tables[4];
 	struct exif_data exif;
+	struct huffman_table ac_tables[4];
+	struct huffman_table dc_tables[4];
+
 };
 
 struct file_data

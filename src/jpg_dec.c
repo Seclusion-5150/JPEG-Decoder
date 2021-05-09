@@ -1,6 +1,5 @@
 #include "arraylist.h"
 
-
 void print_array(byte *array, int len, char *type)
 {
 	int i;
@@ -172,25 +171,24 @@ void parse_xmp_segment(struct file_data * data)
 }
 void parse_qtables(struct file_data * data)
 {
-	byte table_info = 0;
-	int i = 0, j = 0;
+	byte qtable_info = 0;
+	int i = 0;
 	byte length = 0;
-	byte data2[8][8];
 	byte array_length = 0;
 	length  = fgetc(data->image) << 8;
 	length += fgetc(data->image);
-	length-=2;
+	length -=2;
 	printf("Quantization Table Length: %d\n", length);
 	while(length > 0)
 	{
-		table_info = fgetc(data->image);
-		byte table_id = table_info & 0x0f;
-		if(table_id > 3)
+		qtable_info = fgetc(data->image);
+		byte qtable_id = qtable_info & 0x0f;
+		if(qtable_id > 3)
 		{
-			printf("Error: %#1x\n", table_id);
+			printf("Error: %#1x\n", qtable_id);
 			return;
 		}
-		if(table_info >> 4 !=0)
+		if(qtable_info >> 4 != 0)
 		{
 			for(i = 0; i < 64;i++)
 			{
@@ -270,28 +268,120 @@ void parse_dct(struct file_data *data)
 
 void parse_htables(struct file_data *data)
 {
-	byte c = 1;
-	int counter = 0;
+	byte c = 0;
+	int i = 0, k = 0, p = 0;
 	int length = fgetc(data->image) << 8;
-	length+= fgetc(data->image);
-
+	int test_index = 3;
+	length += fgetc(data->image);
 	printf("length: %d\n", length);
-	length-=2;
+	length -= 2;
+
 	while(length > 0)
 	{
-		c = fgetc(data->image);
 
-
+		byte htable_info = fgetc(data->image);
+		byte htable_id   = htable_info & 0x0F;
+		bool isACTable  = htable_info >> 4;
 
 		length--;
+		if(htable_id > 3)
+		{
+			printf("Error(%d): Invalid Huffman table?\n", htable_id);
+			continue;
+		}
+		else
+		{
+			char *string = malloc(sizeof(char) * 20);
+			if(isACTable)string = "an AC table";
+			else string = "a DC table";
+			printf("Huffman Table Codes for %s: %d\n",string, htable_id);
+		}
+		if(isACTable)
+		{
+			int counter = 0;
+
+			for(i = 0; i < 16;i++)
+			{
+				data->image_data.ac_tables[p].symbol_sizes[i] = fgetc(data->image);
+				c += data->image_data.ac_tables[p].symbol_sizes[i];
+				if(data->image_data.ac_tables[p].symbol_sizes[i] != 0)counter++;
+			//	printf("Number of bits of codes of %d length: %d\n",i + 1,  symbol_sizes[i]);
+			}
+
+			length -= (16 + c);
+
+			byte code = 0;
+			int j = 0, l = 0, m = 0;
+			data->image_data.ac_tables[p].isFilled = TRUE;
+
+			data->image_data.ac_tables[p].symbols = (byte **)malloc(sizeof(byte*)*counter);
+
+			data->image_data.ac_tables[p].rows = counter;
+
+			for(i = 0; i < 16; i++) data->image_data.ac_tables[p].symbols[i] = (byte *)malloc(sizeof(byte*)*data->image_data.ac_tables[p].symbol_sizes[i]);
+
+			j = 0;
+			while(c > 0)
+			{
+				for(i = 0; i < data->image_data.ac_tables[p].symbol_sizes[j];++i)
+				{
+					code = fgetc(data->image);
+					data->image_data.ac_tables[p].symbols[l][m++] = code;
+				}
+				c-=data->image_data.ac_tables[p].symbol_sizes[j++];
+				m = 0;
+				l++;
+			}
+			p++;
+			c = 0;
+		}
+		else
+		{
+			int counter = 0;
+
+			for(i = 0; i < 16;i++)
+			{
+				data->image_data.dc_tables[k].symbol_sizes[i] = fgetc(data->image);
+				c += data->image_data.dc_tables[k].symbol_sizes[i];
+				if(data->image_data.dc_tables[k].symbol_sizes[i] != 0)counter++;
+			}
+
+			length -= (16 + c);
+
+			byte code = 0;
+			int j = 0, l = 0, m = 0;
+			data->image_data.dc_tables[k].isFilled = TRUE;
+			data->image_data.dc_tables[k].symbols = (byte **)malloc(sizeof(byte*)*counter);
+			data->image_data.dc_tables[k].rows = counter;
+			for(i = 0; i < 16; i++) data->image_data.dc_tables[k].symbols[i] = (byte *)malloc(sizeof(byte*)*data->image_data.dc_tables[k].symbol_sizes[i]);
+
+			j = 0;
+			while(c > 0)
+			{
+				for(i = 0; i < data->image_data.dc_tables[k].symbol_sizes[j];++i)
+				{
+					code = fgetc(data->image);
+					data->image_data.dc_tables[k].symbols[l][m++] = code;
+				}
+				m = 0;
+				l++;
+				c-=data->image_data.dc_tables[k].symbol_sizes[j++];
+			}
+			c = 0;
+			k++;
+		}
 	}
 }
+void scan_image(struct file_data * data)
+{
 
+}
 int main(int argc, char *argv[])
 {
 	//get the file to read from the commandline
-	char *args = malloc(sizeof(char)*(strlen("./res/") + strlen(argv[1])));
-	strcat(args, "./res/");
+	char * path = "./res/";
+	char *args = malloc(sizeof(char)*(strlen(path) + strlen(argv[1])));
+	strcat(args, path);
 	strcat(args, argv[1]);
 
 	struct file_data data;
@@ -369,14 +459,65 @@ int main(int argc, char *argv[])
 						break;
 					case DHT:
 						printf("\nThis specifies one or more Huffman tables: %#1x\n", (uint)c);
+						for(i = 0; i < 4;i++)data.image_data.ac_tables[i].isFilled = FALSE;
+						for(i = 0; i < 4;i++)data.image_data.dc_tables[i].isFilled = FALSE;
 						parse_htables(&data);
+						int k = 0;
+						int counter = 0;
+						while(data.image_data.ac_tables[k].isFilled)
+						{
+							printf("Symbol Sizes: \n");
+							for(i = 0; i < 16;i++)
+							{
+								printf("Amount of Symbols: %d of length %d\n", data.image_data.ac_tables[k].symbol_sizes[i], i + 1);
+							}
+							printf("AC Table[%d]\n", k);
+							for(i = 0; i < data.image_data.ac_tables[k].rows;i++)
+							{
+
+								for(j = 0; j < data.image_data.ac_tables[k].symbol_sizes[counter];j++)
+								{
+									printf("Data of bit length : %d is : %d\n", i + 1 , data.image_data.ac_tables[k].symbols[i][j]);
+								}
+								counter++;
+							}
+
+							counter = 0;
+							k++;
+						}
+
+						k = 0;
+						counter = 0;
+
+						while(data.image_data.dc_tables[k].isFilled)
+						{
+							printf("Symbol Sizes: \n");
+							for(i = 0; i < 16;i++)
+							{
+								printf("Amount of Symbols: %d of length %d\n", data.image_data.dc_tables[k].symbol_sizes[i], i + 1);
+							}
+							printf("DC Table[%d]\n", k);
+							for(i = 0; i < data.image_data.dc_tables[k].rows;i++)
+							{
+
+								for(j = 0; j < data.image_data.dc_tables[k].symbol_sizes[counter];j++)
+								{
+									printf("Data of bit length : %d is : %d\n", i + 1 , data.image_data.dc_tables[k].symbols[i][j]);
+								}
+								counter++;
+							}
+
+							counter = 0;
+							k++;
+						}
+
 						break;
 					case DQT:
 						printf("\nThis specifies one or more quantization tables: %#1x\n", (uint)c);
 						parse_qtables(&data);
 						j = 0;
 						i = 0;
-						int counter = 0;
+						counter = 0;
 						while(data.image_data.q_tables[i].isFilled)
 						{
 								printf("Quantization Table: \n");
@@ -400,6 +541,7 @@ int main(int argc, char *argv[])
 						break;
 					case SOS:
 						printf("\nStart of Scan: %#1x\n", (uint)c);
+						scan_image(&data);
 						break;
 					case RST0:
 						break;
