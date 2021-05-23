@@ -23,7 +23,7 @@ void print_array(byte *array, int len, char *type)
 	{
 		for(i = 0; i < len; i++)
 		{
-			printf("%#1x ", array[i]);
+			printf("%#1x \n", array[i]);
 		}
 	}
 	printf("\n");
@@ -263,7 +263,6 @@ void parse_dct(struct file_data *data)
 	}
 	printf("Width: %u\n", data->image_data.width);
 	printf("Height: %u\n", data->image_data.height);
-	fseek(data->image, -1L, SEEK_CUR);
 }
 
 void parse_htables(struct file_data *data)
@@ -271,7 +270,6 @@ void parse_htables(struct file_data *data)
 	byte c = 0;
 	int i = 0, k = 0, p = 0;
 	int length = fgetc(data->image) << 8;
-	int test_index = 3;
 	length += fgetc(data->image);
 	printf("length: %d\n", length);
 	length -= 2;
@@ -298,14 +296,11 @@ void parse_htables(struct file_data *data)
 		}
 		if(isACTable)
 		{
-			int counter = 0;
 
 			for(i = 0; i < 16;i++)
 			{
 				data->image_data.ac_tables[p].symbol_sizes[i] = fgetc(data->image);
 				c += data->image_data.ac_tables[p].symbol_sizes[i];
-				if(data->image_data.ac_tables[p].symbol_sizes[i] != 0)counter++;
-			//	printf("Number of bits of codes of %d length: %d\n",i + 1,  symbol_sizes[i]);
 			}
 
 			length -= (16 + c);
@@ -314,9 +309,9 @@ void parse_htables(struct file_data *data)
 			int j = 0, l = 0, m = 0;
 			data->image_data.ac_tables[p].isFilled = TRUE;
 
-			data->image_data.ac_tables[p].symbols = (byte **)malloc(sizeof(byte*)*counter);
+			data->image_data.ac_tables[p].symbols = (byte **)malloc(sizeof(byte*)*16);
 
-			data->image_data.ac_tables[p].rows = counter;
+			data->image_data.ac_tables[p].rows = 16;
 
 			for(i = 0; i < 16; i++) data->image_data.ac_tables[p].symbols[i] = (byte *)malloc(sizeof(byte*)*data->image_data.ac_tables[p].symbol_sizes[i]);
 
@@ -337,13 +332,11 @@ void parse_htables(struct file_data *data)
 		}
 		else
 		{
-			int counter = 0;
 
 			for(i = 0; i < 16;i++)
 			{
 				data->image_data.dc_tables[k].symbol_sizes[i] = fgetc(data->image);
 				c += data->image_data.dc_tables[k].symbol_sizes[i];
-				if(data->image_data.dc_tables[k].symbol_sizes[i] != 0)counter++;
 			}
 
 			length -= (16 + c);
@@ -351,8 +344,8 @@ void parse_htables(struct file_data *data)
 			byte code = 0;
 			int j = 0, l = 0, m = 0;
 			data->image_data.dc_tables[k].isFilled = TRUE;
-			data->image_data.dc_tables[k].symbols = (byte **)malloc(sizeof(byte*)*counter);
-			data->image_data.dc_tables[k].rows = counter;
+			data->image_data.dc_tables[k].symbols = (byte **)malloc(sizeof(byte*)*16);
+			data->image_data.dc_tables[k].rows = 16;
 			for(i = 0; i < 16; i++) data->image_data.dc_tables[k].symbols[i] = (byte *)malloc(sizeof(byte*)*data->image_data.dc_tables[k].symbol_sizes[i]);
 
 			j = 0;
@@ -374,6 +367,194 @@ void parse_htables(struct file_data *data)
 }
 void scan_image(struct file_data * data)
 {
+	int length = fgetc(data->image) << 8;
+	int num_components = 0;
+	int i = 0;
+	byte stream = 0, stream_last = 0;
+	length += fgetc(data->image);
+	printf("Length: %d\n", length);
+
+	num_components = fgetc(data->image);
+	printf("Number of Components: %d\n", num_components);
+	for(i = 0; i < num_components; i++)
+	{
+		byte component_id = fgetc(data->image);
+		byte htable_id = fgetc(data->image);
+
+		data->image_data.ccmp[component_id - 1].ac_huffman_table_id = htable_id >> 4;
+		data->image_data.ccmp[component_id - 1].dc_huffman_table_id = htable_id & 0x0F;
+
+		if(data->image_data.ccmp[component_id - 1].ac_huffman_table_id > 3
+		 || data->image_data.ccmp[component_id - 1].dc_huffman_table_id > 3)
+		{
+			printf("Error\n");
+			return;
+		}
+
+	}
+	data->image_data.start_of_sel = fgetc(data->image);
+	data->image_data.end_of_sel = fgetc(data->image);
+	data->image_data.successive_approximation = fgetc(data->image);
+	data->image_data.sa_high = data->image_data.successive_approximation >> 4;
+	data->image_data.sa_low = data->image_data.successive_approximation & 0x0F;
+
+	if(data->image_data.start_of_sel != 0 || data->image_data.end_of_sel != 63)
+	{
+		printf("ERROR WITH START OF SELECTION OR END OF SELECTION\n");
+		return;
+	}
+	if(data->image_data.sa_low != 0 || data->image_data.sa_high != 0)
+	{
+		printf("ERROR WITH SUCCESSIVE APPROXIMATION\n");
+		return;
+	}
+	long counter = 0;
+	bool isOver = FALSE;
+	while(!isOver) // read all of the bytes after the start of scan marker until the end of image markers
+	{							 //Count the length of the data
+		stream = fgetc(data->image);
+		++counter;
+		if(stream == 0xFF)
+		{
+			stream = fgetc(data->image);
+			++counter;
+			switch(stream)
+			{
+				case EOI:
+					isOver = TRUE;
+					break;
+			}
+		}
+	}
+
+	fseek(data->image, -counter, SEEK_CUR); // go back to the beginning of the SOS marker
+	data->image_data.huffman_data = (byte *)malloc(sizeof(byte) * (counter - 2));
+	data->image_data.huffman_data_len = counter;
+	stream = 0;
+	for(i = 0; i < (counter - 2); i++)//Now read all data until right before the end of image marker
+	{
+		stream = fgetc(data->image);
+		data->image_data.huffman_data[i] = stream;
+		//Currently does not handle any reset markers
+		//Will fix later
+	}
+}
+
+void decomp_hdata(struct file_data *data)
+{
+	int i = 0;
+	int j = 0;
+	int k = 0;
+	int l = 0;
+	bool isRight = FALSE;
+
+	while(data->image_data.dc_tables[k].isFilled)
+	{
+		data->image_data.dc_tables[k].codes = (struct htree_codes*)malloc(sizeof(struct htree_codes) * 1000);
+		for(i = 0; i < 1000; i++)
+		{
+			data->image_data.dc_tables[k].codes[i].right_child = (struct htree_codes*)malloc(sizeof(struct htree_codes) * 1);
+			data->image_data.dc_tables[k].codes[i].right_child->code = -1;
+			data->image_data.dc_tables[k].codes[i].code_length = -1;
+			data->image_data.dc_tables[k].codes[i].left_child = (struct htree_codes*)malloc(sizeof(struct htree_codes) * 1);
+			data->image_data.dc_tables[k].codes[i].left_child->code = -1;
+		}
+
+		for(i = 0; i < 16; i++)
+		{
+			for(j = 0; j < data->image_data.dc_tables[k].symbol_sizes[i];j++)
+			{
+				if((j + 1) % 2 == 0)
+				{
+					data->image_data.dc_tables[k].codes[l].right_child->code = data->image_data.dc_tables[k].symbols[i][j];
+					printf("Right: [%d][%d]: %d\n", i + 1, j, data->image_data.dc_tables[k].codes[l].right_child->code);
+					++l;
+					isRight = TRUE;
+				}
+				else
+				{
+					isRight = FALSE;
+					data->image_data.dc_tables[k].codes[l].isFilled = TRUE;
+
+					data->image_data.dc_tables[k].codes[l].code_length = i + 1;
+					printf("Code Length: %d\n", data->image_data.dc_tables[k].codes[l].code_length);
+					data->image_data.dc_tables[k].codes[l].left_child->code = data->image_data.dc_tables[k].symbols[i][j];
+					printf("Left:  [%d][%d]: %d\n", i + 1, j, data->image_data.dc_tables[k].codes[l].left_child->code);
+
+				}
+			}
+			if(data->image_data.dc_tables[k].symbol_sizes[i] != 0 && !isRight)l++;
+		}
+		for(i = 0; i < l; i++)
+		{
+			printf("    %d\n\n", data->image_data.dc_tables[k].codes[i].code_length);
+			printf("%d	", data->image_data.dc_tables[k].codes[i].left_child->code );
+			printf("%d\n\n", 	 data->image_data.dc_tables[k].codes[i].right_child->code);
+		}
+		l = 0;
+		k++;
+	}
+	isRight = FALSE;
+	k = 0;
+	l = 0;
+	while(data->image_data.ac_tables[k].isFilled)
+	{
+		data->image_data.ac_tables[k].codes = (struct htree_codes*)malloc(sizeof(struct htree_codes) * 1000);
+		for(i = 0; i < 1000; i++)
+		{
+			data->image_data.ac_tables[k].codes[i].right_child = (struct htree_codes*)malloc(sizeof(struct htree_codes) * 1);
+			data->image_data.ac_tables[k].codes[i].right_child->code = -1;
+			data->image_data.ac_tables[k].codes[i].code_length = -1;
+			data->image_data.ac_tables[k].codes[i].left_child = (struct htree_codes*)malloc(sizeof(struct htree_codes) * 1);
+			data->image_data.ac_tables[k].codes[i].left_child->code = -1;
+			data->image_data.ac_tables[k].codes[i].isLeaf = FALSE;
+			data->image_data.ac_tables[k].codes[i].isFilled = FALSE;
+		}
+
+		for(i = 0; i < 16; i++)
+		{
+			for(j = 0; j < data->image_data.ac_tables[k].symbol_sizes[i];j++)
+			{
+
+				if((j + 1) % 2 == 0)
+				{
+					data->image_data.ac_tables[k].codes[l].right_child->code = data->image_data.ac_tables[k].symbols[i][j];
+					data->image_data.ac_tables[k].codes[l].right_child->isLeaf = TRUE;
+					data->image_data.ac_tables[k].codes[l].right_child->code_length = i + 1;
+					printf("Right: [%d][%d]: %d\n", i + 1, j, data->image_data.ac_tables[k].codes[l].right_child->code);
+					++l;
+					isRight = TRUE;
+				}
+				else
+				{
+					isRight = FALSE;
+					data->image_data.ac_tables[k].codes[l].code_length = i + 1;
+					data->image_data.ac_tables[k].codes[l].left_child->code = data->image_data.ac_tables[k].symbols[i][j];
+					data->image_data.ac_tables[k].codes[l].left_child->isLeaf = TRUE;
+					data->image_data.ac_tables[k].codes[l].left_child->isFilled = TRUE;
+					data->image_data.ac_tables[k].codes[l].left_child->code_length = i + 1;
+					printf("Left:  [%d][%d]: %d\n", i + 1, j, data->image_data.ac_tables[k].codes[l].left_child->code);
+
+				}
+			}
+			if(data->image_data.ac_tables[k].symbol_sizes[i] != 0 && !isRight)l++;
+		}
+
+		for(i = 0; i < l; i++)
+		{
+
+			printf("    %d\n\n", data->image_data.ac_tables[k].codes[i].code_length);
+			printf("%d	", data->image_data.ac_tables[k].codes[i].left_child->code );
+			printf("%d\n\n", 	 data->image_data.ac_tables[k].codes[i].right_child->code);
+		}
+
+		l = 0;
+		k++;
+	}
+	isRight = FALSE;
+	j = 0;
+	k = 0;
+	i = 1;
 
 }
 int main(int argc, char *argv[])
@@ -463,10 +644,10 @@ int main(int argc, char *argv[])
 						for(i = 0; i < 4;i++)data.image_data.dc_tables[i].isFilled = FALSE;
 						parse_htables(&data);
 						int k = 0;
-						int counter = 0;
+
 						while(data.image_data.ac_tables[k].isFilled)
 						{
-							printf("Symbol Sizes: \n");
+							printf("Symbol Sizes[%d]: \n", k);
 							for(i = 0; i < 16;i++)
 							{
 								printf("Amount of Symbols: %d of length %d\n", data.image_data.ac_tables[k].symbol_sizes[i], i + 1);
@@ -475,19 +656,17 @@ int main(int argc, char *argv[])
 							for(i = 0; i < data.image_data.ac_tables[k].rows;i++)
 							{
 
-								for(j = 0; j < data.image_data.ac_tables[k].symbol_sizes[counter];j++)
+								for(j = 0; j < data.image_data.ac_tables[k].symbol_sizes[i];++j)
 								{
 									printf("Data of bit length : %d is : %d\n", i + 1 , data.image_data.ac_tables[k].symbols[i][j]);
 								}
-								counter++;
 							}
 
-							counter = 0;
+
 							k++;
 						}
 
 						k = 0;
-						counter = 0;
 
 						while(data.image_data.dc_tables[k].isFilled)
 						{
@@ -500,14 +679,13 @@ int main(int argc, char *argv[])
 							for(i = 0; i < data.image_data.dc_tables[k].rows;i++)
 							{
 
-								for(j = 0; j < data.image_data.dc_tables[k].symbol_sizes[counter];j++)
+								for(j = 0; j < data.image_data.dc_tables[k].symbol_sizes[i];++j)
 								{
 									printf("Data of bit length : %d is : %d\n", i + 1 , data.image_data.dc_tables[k].symbols[i][j]);
 								}
-								counter++;
+
 							}
 
-							counter = 0;
 							k++;
 						}
 
@@ -542,6 +720,11 @@ int main(int argc, char *argv[])
 					case SOS:
 						printf("\nStart of Scan: %#1x\n", (uint)c);
 						scan_image(&data);
+						printf("Start of Selection: %d\n", data.image_data.start_of_sel );
+						printf("End of Selection: %d\n", data.image_data.end_of_sel );
+						printf("Succesive Approximation high: %d\n", data.image_data.sa_high);
+						printf("Succesive Approximation Low: %d\n", data.image_data.sa_low);
+						printf("Huffman Data Length: %d\n", data.image_data.huffman_data_len);
 						break;
 					case RST0:
 						break;
@@ -568,10 +751,10 @@ int main(int argc, char *argv[])
 		}
 		i++;
 	}
-
 	data.file_len = i;
-
 	fclose(data.image);
+
+	decomp_hdata(&data);
 
 	return 0;
 }

@@ -98,6 +98,8 @@ struct color_component
 	byte horizontal_sampling_factor;
 	byte vertical_sampling_factor;
 	byte quantization_table_id;
+	byte ac_huffman_table_id;
+	byte dc_huffman_table_id;
 };
 struct huffman_table
 {
@@ -105,7 +107,18 @@ struct huffman_table
 	int rows;
 	int symbol_sizes[16];
 	bool isFilled;
+	struct htree_codes *codes;
 };
+struct htree_codes
+{
+	struct htree_codes *left_child;
+	struct htree_codes *right_child;
+	bool isLeaf;
+	bool isFilled;
+	int code;
+	uint code_length;
+};
+
 struct image_data
 {
 	int width;
@@ -116,7 +129,13 @@ struct image_data
 	struct exif_data exif;
 	struct huffman_table ac_tables[4];
 	struct huffman_table dc_tables[4];
-
+	byte *huffman_data;
+	int huffman_data_len;
+	byte start_of_sel;
+	byte end_of_sel;
+	byte successive_approximation;
+	byte sa_high;
+	byte sa_low;
 };
 
 struct file_data
